@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Clicker Game</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f0f5, #cce7ff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px #aaa;
+        }
+
+        #moneyCount {
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: #444;
+        }
+
+        /* Button Styles */
+        button {
+            font-size: 24px;
+            padding: 20px 50px;
+            margin: 10px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        #moneyButton {
+            background: #ffcc00;
+            color: #222;
+        }
+
+        #moneyButton:hover {
+            background: #ffd633;
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        #goToBank {
+            background: #3399ff;
+            color: #fff;
+        }
+
+        #goToBank:hover {
+            background: #66b3ff;
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Animation for money counter */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .pop {
+            animation: pop 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>💰 Money Clicker 💰</h1>
+    <div id="moneyCount">Money: 0</div>
+    <button id="moneyButton">Click Me!</button>
+    <br>
+    <button id="goToBank">Go to Bank</button>
+
+    <script>
+        // Load money from localStorage or start at 0
+        let money = Number(localStorage.getItem('money')) || 0;
+
+        const moneyCount = document.getElementById('moneyCount');
+        const moneyButton = document.getElementById('moneyButton');
+        const goToBank = document.getElementById('goToBank');
+
+        // Update money display
+        function updateMoneyDisplay() {
+            moneyCount.textContent = `Money: ${money}`;
+            moneyCount.classList.remove('pop'); // reset animation
+            void moneyCount.offsetWidth; // trigger reflow
+            moneyCount.classList.add('pop'); // play animation
+        }
+
+        updateMoneyDisplay();
+
+        // Increase money on click
+        moneyButton.addEventListener('click', () => {
+            money += 1;
+            localStorage.setItem('money', money); // Save money
+            updateMoneyDisplay();
+        });
+
+        // Go to bank.html
+        goToBank.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

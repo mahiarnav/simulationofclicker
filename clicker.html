@@ -1,116 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Clicker Game</title>
-    <style>
-        /* General Page Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f0f0f5, #cce7ff);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Clicker Game</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f0f5, #cce7ff);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
 
-        h1 {
-            font-size: 48px;
-            color: #333;
-            margin-bottom: 20px;
-            text-shadow: 1px 1px 2px #aaa;
-        }
+    h1 {
+        font-size: 48px;
+        color: #333;
+        margin-bottom: 20px;
+        text-shadow: 1px 1px 2px #aaa;
+    }
 
-        #moneyCount {
-            font-size: 36px;
-            margin-bottom: 30px;
-            color: #444;
-        }
+    #moneyCount {
+        font-size: 36px;
+        margin-bottom: 20px;
+        color: #444;
+    }
 
-        /* Button Styles */
-        button {
-            font-size: 24px;
-            padding: 20px 50px;
-            margin: 10px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+    input, select {
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: none;
+        margin: 5px 0;
+        width: 200px;
+        text-align: center;
+    }
 
-        #moneyButton {
-            background: #ffcc00;
-            color: #222;
-        }
+    button {
+        font-size: 18px;
+        padding: 12px 25px;
+        margin: 5px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        font-weight: 600;
+    }
 
-        #moneyButton:hover {
-            background: #ffd633;
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
+    #moneyButton {
+        background: #ffcc00;
+        color: #222;
+        font-size: 24px;
+        padding: 15px 40px;
+        margin: 15px 0;
+    }
 
-        #goToBank {
-            background: #3399ff;
-            color: #fff;
-        }
+    #moneyButton:hover {
+        background: #ffd633;
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
 
-        #goToBank:hover {
-            background: #66b3ff;
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
+    #goToBank {
+        background: #3399ff;
+        color: #fff;
+    }
 
-        /* Animation for money counter */
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-        }
-        .pop {
-            animation: pop 0.3s ease;
-        }
-    </style>
+    #goToBank:hover {
+        background: #66b3ff;
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    #addAccount, #deleteAccount {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    #addAccount:hover, #deleteAccount:hover {
+        background: #16a34a;
+    }
+
+    #withdraw {
+        background: #f97316;
+        color: #fff;
+    }
+
+    #withdraw:hover {
+        background: #fb923c;
+    }
+
+    @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+
+    .pop {
+        animation: pop 0.3s ease;
+    }
+
+    .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+</style>
 </head>
 <body>
-    <h1>💰 Money Clicker 💰</h1>
-    <div id="moneyCount">Money: 0</div>
-    <button id="moneyButton">Click Me!</button>
-    <br>
-    <button id="goToBank">Go to Bank</button>
 
-    <script>
-        // Load money from localStorage or start at 0
-        let money = Number(localStorage.getItem('money')) || 0;
+<h1>💰 Money Clicker 💰</h1>
 
-        const moneyCount = document.getElementById('moneyCount');
-        const moneyButton = document.getElementById('moneyButton');
-        const goToBank = document.getElementById('goToBank');
+<div id="moneyCount">Money: 0</div>
+<button id="moneyButton">Click Me!</button>
 
-        // Update money display
-        function updateMoneyDisplay() {
-            moneyCount.textContent = `Money: ${money}`;
-            moneyCount.classList.remove('pop'); // reset animation
-            void moneyCount.offsetWidth; // trigger reflow
-            moneyCount.classList.add('pop'); // play animation
+<!-- Account Management -->
+<div class="row">
+    <select id="accountSelect"></select>
+</div>
+<div class="row">
+    <input type="text" id="newAccount" placeholder="Create account">
+    <button id="addAccount">Add Account</button>
+    <button id="deleteAccount">Delete Account</button>
+    <button id="withdraw">Withdraw to Bank</button>
+</div>
+
+<!-- Go to Bank -->
+<button id="goToBank">Go to Bank</button>
+
+<script>
+    // ===== DATA =====
+    let accounts = JSON.parse(localStorage.getItem("clickerAccounts")) || { "Main": 0 };
+    let currentAccount = localStorage.getItem("clickerCurrent") || "Main";
+
+    // ===== ELEMENTS =====
+    const moneyCount = document.getElementById('moneyCount');
+    const moneyButton = document.getElementById('moneyButton');
+    const goToBank = document.getElementById('goToBank');
+    const accountSelect = document.getElementById('accountSelect');
+    const newAccountInput = document.getElementById('newAccount');
+    const addAccountBtn = document.getElementById('addAccount');
+    const deleteAccountBtn = document.getElementById('deleteAccount');
+    const withdrawBtn = document.getElementById('withdraw');
+
+    // ===== FUNCTIONS =====
+    function save() {
+        localStorage.setItem("clickerAccounts", JSON.stringify(accounts));
+        localStorage.setItem("clickerCurrent", currentAccount);
+    }
+
+    function updateMoneyDisplay() {
+        moneyCount.textContent = `Money: ${accounts[currentAccount]}`;
+        moneyCount.classList.remove('pop');
+        void moneyCount.offsetWidth;
+        moneyCount.classList.add('pop');
+    }
+
+    function loadAccounts() {
+        accountSelect.innerHTML = "";
+        for (let acc in accounts) {
+            const option = document.createElement('option');
+            option.value = acc;
+            option.text = acc;
+            accountSelect.appendChild(option);
         }
+        accountSelect.value = currentAccount;
+    }
 
+    // ===== INITIAL RENDER =====
+    loadAccounts();
+    updateMoneyDisplay();
+
+    // ===== EVENTS =====
+    // Click money button
+    moneyButton.addEventListener('click', () => {
+        accounts[currentAccount] += 1;
+        save();
         updateMoneyDisplay();
+    });
 
-        // Increase money on click
-        moneyButton.addEventListener('click', () => {
-            money += 1;
-            localStorage.setItem('money', money); // Save money
-            updateMoneyDisplay();
+    // Go to bank
+    goToBank.addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+
+    // Switch account
+    accountSelect.addEventListener('change', () => {
+        currentAccount = accountSelect.value;
+        save();
+        updateMoneyDisplay();
+    });
+
+    // Add account
+    addAccountBtn.addEventListener('click', () => {
+        const name = newAccountInput.value.trim();
+        if (!name) return alert("Enter a valid account name");
+        if (accounts[name]) return alert("Account already exists");
+        accounts[name] = 0;
+        currentAccount = name;
+        newAccountInput.value = "";
+        loadAccounts();
+        save();
+        updateMoneyDisplay();
+    });
+
+    // Delete account with 2-step confirmation
+    deleteAccountBtn.addEventListener('click', () => {
+        if (!currentAccount) return alert("No account to delete");
+        if (!confirm(`Are you sure you want to delete account "${currentAccount}"?`)) return;
+        if (!confirm("This is the SECOND confirmation. Deleting is permanent. Continue?")) return;
+
+        delete accounts[currentAccount];
+        const remaining = Object.keys(accounts);
+        currentAccount = remaining.length > 0 ? remaining[0] : null;
+        loadAccounts();
+        save();
+        updateMoneyDisplay();
+        alert("Account deleted successfully!");
+    });
+
+    // Withdraw Clicker money to Bank
+    withdrawBtn.addEventListener('click', () => {
+        if (currentAccount !== "Main") return alert("Withdraw works only for Main account!");
+
+        // Load bank data
+        let bank = JSON.parse(localStorage.getItem("bank")) || {
+            theme: "light",
+            current: "Main",
+            accounts: { Main: { balance: 0, transactions: [] } }
+        };
+
+        const moneyToTransfer = accounts["Main"];
+        if (moneyToTransfer <= 0) return alert("No money to withdraw!");
+
+        // Add money to bank
+        if (!bank.accounts["Main"]) {
+            bank.accounts["Main"] = { balance: 0, transactions: [] };
+        }
+        bank.accounts["Main"].balance += moneyToTransfer;
+        bank.accounts["Main"].transactions.push({
+            type: "Deposit from Clicker",
+            amount: moneyToTransfer,
+            note: "Clicker Withdraw",
+            time: new Date().toLocaleString()
         });
 
-        // Go to bank.html
-        goToBank.addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
-    </script>
+        localStorage.setItem("bank", JSON.stringify(bank));
+
+        // Reset Clicker money
+        accounts["Main"] = 0;
+        save();
+        updateMoneyDisplay();
+        alert(`$${moneyToTransfer} transferred to Bank Main account!`);
+    });
+
+</script>
+
 </body>
 </html>

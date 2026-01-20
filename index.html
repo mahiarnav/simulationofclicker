@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bittu's Bank</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --text:#0f172a;
+  --accent:#2563eb;
+}
+body.dark{
+  --bg:#020617;
+  --card:#0f172a;
+  --text:#e5e7eb;
+  --accent:#22d3ee;
+}
+body{
+  margin:0;
+  font-family:system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+}
+.app{
+  max-width:900px;
+  width:100%;
+  padding:20px;
+}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+h1{margin:0 0 10px;}
+select,input,button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:10px;
+  border:none;
+}
+body.dark select, body.dark input{background:#020617; color:white;}
+button{
+  background:var(--accent);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+.row{display:flex; gap:10px;}
+.history{
+  max-height:260px;
+  overflow:auto;
+  font-size:14px;
+}
+.tx{
+  padding:6px 0;
+  border-bottom:1px solid rgba(0,0,0,.15);
+}
+.balance{
+  font-size:30px;
+  font-weight:700;
+}
+.theme-toggle{
+  position:fixed;
+  top:14px;
+  right:14px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:var(--card);
+  border:none;
+  font-size:20px;
+  cursor:pointer;
+  box-shadow:0 6px 15px rgba(0,0,0,.25);
+}
+.current-account{
+  font-weight:bold;
+  color:#2563eb;
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeBtn">🌙</button>
+
+<div class="app">
+  <h1>🏦 Bittu’s Bank</h1>
+
+  <!-- Accounts -->
+  <select id="accountSelect"></select>
+  <input type="text" id="newAccount" placeholder="Create account">
+  <div class="row">
+    <button onclick="addAccount()">Add Account</button>
+    <button onclick="deleteAccount()">Delete Selected Account</button>
+  </div>
+
+  <div style="margin-top:8px; font-weight:bold;">Current Account: <span id="currentAccountDisplay"></span></div>
+
+  <!-- Banking Actions -->
+  <div class="card">
+    <div class="balance">$<span id="balance">0</span></div>
+    <input type="number" id="amount" placeholder="Amount">
+    <div class="row">
+      <button onclick="deposit()">Deposit</button>
+      <button onclick="withdraw()">Withdraw</button>
+    </div>
+
+    <h3>Transfer</h3>
+    <select id="toAccount"></select>
+    <input type="number" id="transferAmount" placeholder="Amount">
+    <button onclick="transfer()">Send</button>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="card">
+    <h3>Transactions</h3>
+    <div class="history" id="history"></div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+let bank = JSON.parse(localStorage.getItem("bank")) || {
+  theme:"light",
+  current:"Main",
+  accounts:{ Main:{balance:0, transactions:[]} }
+};
+
+// ===== THEME =====
+const themeBtn = document.getElementById("themeBtn");
+if(bank.theme === "dark"){ document.body.classList.add("dark"); themeBtn.textContent="☀️"; }
+themeBtn.onclick = () => {
+  document.body.classList.toggle("dark");
+  bank.theme = document.body.classList.contains("dark") ? "dark" : "light";
+  themeBtn.textContent = bank.theme==="dark"?"☀️":"🌙";
+  save();
+}
+
+// ===== ELEMENTS =====
+const accountSelect = document.getElementById("accountSelect");
+const toAccount = document.getElementById("toAccount");
+const balanceEl = document.getElementById("balance");
+const historyEl = document.getElementById("history");
+const newAccountInput = document.getElementById("newAccount");
+const amountInput = document.getElementById("amount");
+const transferInput = document.getElementById("transferAmount");
+const currentAccountDisplay = document.getElementById("currentAccountDisplay");
+
+// ===== SAVE =====
+function save(){ localStorage.setItem("bank", JSON.stringify(bank)); }
+
+// ===== LOAD ACCOUNTS =====
+function loadAccounts(){
+  accountSelect.innerHTML = "";
+  toAccount.innerHTML = "";
+  for(let accName in bank.accounts){
+    let option1 = document.createElement("option");
+    option1.value = accName; 
+    option1.text = accName;
+    if(accName===bank.current) option1.className="current-account";
+    accountSelect.appendChild(option1);
+
+    if(accName !== bank.current){
+      let option2 = document.createElement("option");
+      option2.value = accName; option2.text = accName;
+      toAccount.appendChild(option2);
+    }
+  }
+  accountSelect.value = bank.current;
+  currentAccountDisplay.innerText = bank.current;
+}
+
+// ===== RENDER =====
+function render(){
+  const acc = bank.accounts[bank.current];
+  balanceEl.innerText = acc.balance;
+
+  historyEl.innerHTML = "";
+  acc.transactions.slice().reverse().forEach(tx => {
+    const div = document.createElement("div");
+    div.className = "tx";
+    div.textContent = `${tx.type} $${tx.amount} → ${tx.note} (${tx.time})`;
+    historyEl.appendChild(div);
+  });
+}
+
+// ===== ACCOUNT SWITCH =====
+accountSelect.onchange = () => {
+  bank.current = accountSelect.value;
+  loadAccounts();
+  render();
+  save();
+}
+
+// ===== ADD ACCOUNT =====
+function addAccount(){
+  const name = newAccountInput.value.trim();
+  if(!name) return alert("Enter a valid account name");
+  if(bank.accounts[name]) return alert("Account already exists");
+  bank.accounts[name] = {balance:0, transactions:[]};
+  bank.current = name;
+  newAccountInput.value="";
+  loadAccounts();
+  render();
+  save();
+}
+
+// ===== DELETE ACCOUNT WITH DOUBLE CONFIRMATION =====
+function deleteAccount(){
+  const selected = accountSelect.value;
+  if(!selected) return alert("Select an account to delete");
+  if(!bank.accounts[selected]) return alert("Account does not exist");
+
+  if(confirm(`Are you sure you want to delete account "${selected}"?`)){
+    if(confirm("This is the SECOND confirmation. Deleting is permanent. Continue?")){
+      delete bank.accounts[selected];
+
+      // Switch to any remaining account if deleted current
+      const remainingAccounts = Object.keys(bank.accounts);
+      bank.current = remainingAccounts.length > 0 ? remainingAccounts[0] : null;
+
+      loadAccounts();
+      render();
+      save();
+      alert(`Account "${selected}" has been deleted.`);
+    }
+  }
+}
+
+// ===== DEPOSIT =====
+function deposit(){
+  const amt = parseFloat(amountInput.value);
+  if(!amt || amt<=0) return alert("Enter a valid amount");
+  const acc = bank.accounts[bank.current];
+  acc.balance += amt;
+  acc.transactions.push({type:"Deposit", amount:amt, note:"Cash", time:new Date().toLocaleString()});
+  amountInput.value="";
+  render();
+  save();
+}
+
+// ===== WITHDRAW =====
+function withdraw(){
+  const amt = parseFloat(amountInput.value);
+  const acc = bank.accounts[bank.current];
+  if(!amt || amt<=0) return alert("Enter valid amount");
+  if(amt > acc.balance) return alert("Insufficient funds");
+  acc.balance -= amt;
+  acc.transactions.push({type:"Withdraw", amount:amt, note:"Cash", time:new Date().toLocaleString()});
+  amountInput.value="";
+  render();
+  save();
+}
+
+// ===== TRANSFER =====
+function transfer(){
+  const amt = parseFloat(transferInput.value);
+  const target = toAccount.value;
+  if(!amt || amt<=0) return alert("Enter valid amount");
+  if(!target) return alert("Select account to transfer");
+  const fromAcc = bank.accounts[bank.current];
+  const toAcc = bank.accounts[target];
+  if(amt>fromAcc.balance) return alert("Insufficient funds");
+  fromAcc.balance -= amt;
+  toAcc.balance += amt;
+  const time = new Date().toLocaleString();
+  fromAcc.transactions.push({type:"Transfer Out", amount:amt, note:target, time});
+  toAcc.transactions.push({type:"Transfer In", amount:amt, note:bank.current, time});
+  transferInput.value="";
+  render();
+  save();
+}
+
+// ===== INIT =====
+loadAccounts();
+render();
+</script>
+
+</body>
+</html>
+

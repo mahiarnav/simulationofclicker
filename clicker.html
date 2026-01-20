@@ -225,9 +225,10 @@
         alert("Account deleted successfully!");
     });
 
-    // Withdraw Clicker money to Bank
+    // Withdraw Clicker money to Bank (any account)
     withdrawBtn.addEventListener('click', () => {
-        if (currentAccount !== "Main") return alert("Withdraw works only for Main account!");
+        const clickerMoney = accounts[currentAccount];
+        if (clickerMoney <= 0) return alert("No money to withdraw!");
 
         // Load bank data
         let bank = JSON.parse(localStorage.getItem("bank")) || {
@@ -236,17 +237,16 @@
             accounts: { Main: { balance: 0, transactions: [] } }
         };
 
-        const moneyToTransfer = accounts["Main"];
-        if (moneyToTransfer <= 0) return alert("No money to withdraw!");
-
-        // Add money to bank
-        if (!bank.accounts["Main"]) {
-            bank.accounts["Main"] = { balance: 0, transactions: [] };
+        // Ensure same account exists in bank
+        if (!bank.accounts[currentAccount]) {
+            bank.accounts[currentAccount] = { balance: 0, transactions: [] };
         }
-        bank.accounts["Main"].balance += moneyToTransfer;
-        bank.accounts["Main"].transactions.push({
+
+        // Add money to bank account
+        bank.accounts[currentAccount].balance += clickerMoney;
+        bank.accounts[currentAccount].transactions.push({
             type: "Deposit from Clicker",
-            amount: moneyToTransfer,
+            amount: clickerMoney,
             note: "Clicker Withdraw",
             time: new Date().toLocaleString()
         });
@@ -254,13 +254,14 @@
         localStorage.setItem("bank", JSON.stringify(bank));
 
         // Reset Clicker money
-        accounts["Main"] = 0;
+        accounts[currentAccount] = 0;
         save();
         updateMoneyDisplay();
-        alert(`$${moneyToTransfer} transferred to Bank Main account!`);
+        alert(`$${clickerMoney} transferred to Bank account "${currentAccount}"!`);
     });
 
 </script>
 
 </body>
 </html>
+

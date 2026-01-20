@@ -83,6 +83,25 @@ button{
   font-weight:bold;
   color:#2563eb;
 }
+/* New button for clicker game */
+#goToClicker{
+  font-size:18px;
+  padding:12px 20px;
+  border-radius:12px;
+  background-color:#ffcc00;
+  color:#222;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  margin:15px 0;
+  box-shadow:0 5px 15px rgba(0,0,0,.2);
+  transition: all 0.2s ease;
+}
+#goToClicker:hover{
+  background-color:#ffd633;
+  transform:scale(1.05);
+  box-shadow:0 8px 20px rgba(0,0,0,.3);
+}
 </style>
 </head>
 <body>
@@ -91,6 +110,9 @@ button{
 
 <div class="app">
   <h1>🏦 Bittu’s Bank</h1>
+
+  <!-- Go to Clicker Game Button -->
+  <button id="goToClicker">💰 Go to Clicker Game</button>
 
   <!-- Accounts -->
   <select id="accountSelect"></select>
@@ -277,6 +299,12 @@ function transfer(){
   save();
 }
 
+// ===== GO TO CLICKER GAME =====
+const goToClicker = document.getElementById('goToClicker');
+goToClicker.addEventListener('click', () => {
+    window.location.href = 'clicker.html';
+});
+
 // ===== INIT =====
 loadAccounts();
 render();
@@ -284,4 +312,3 @@ render();
 
 </body>
 </html>
-
